@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Utils for searching the Gutenberg GitHub repository for PRs to review",
   "scripts": {
-    "print-5.0": "node print-5.0.js"
+    "print-milestone": "node print-milestone.js"
   },
   "keywords": [],
   "author": "Robert Anderson",

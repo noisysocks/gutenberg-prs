@@ -10,8 +10,8 @@ npm install
 
 ## Available tasks
 
-### Printing PRs that will close a issue in the WordPress 5.0 milestone
+### Print PRs that will close a issue in the given milestone
 
 ```
-npm run print-5.0
+npm run print-milestone "WordPress 5.0"
 ```

@@ -3,8 +3,12 @@ const fetch = require( 'node-fetch' );
 const { flatMap, escapeRegExp, filter, each } = require( 'lodash' );
 const { sprintf } = require( 'sprintf-js' );
 
-async function fetchOpenFiveDotOhIssues() {
-	const query = 'repo:wordpress/gutenberg is:issue is:open milestone:"WordPress 5.0"';
+function escapeQuotes( string ) {
+	return string.replace( '"', '\\"' );
+}
+
+async function fetchOpenMilestoneIssues( milestone ) {
+	const query = `repo:wordpress/gutenberg is:issue is:open milestone:"${ escapeQuotes( milestone ) }"`;
 	const url = addQueryArgs( 'https://api.github.com/search/issues?q=repo:wordpress/gutenberg', { q: query } );
 	const response = await fetch( url );
 	const { items } = await response.json();
@@ -19,19 +23,25 @@ async function fetchOpenPRs() {
 	return items;
 }
 
-async function fetchOpenFiveDotOhPRs() {
-	const [ issues, prs ] = await Promise.all( [ fetchOpenFiveDotOhIssues(), fetchOpenPRs() ] );
+async function fetchOpenMilestonePRs() {
+	const [ issues, prs ] = await Promise.all( [ fetchOpenMilestoneIssues( milestone ), fetchOpenPRs() ] );
 	return flatMap( issues, ( issue ) => {
 		const expression = new RegExp( '(closes|fixes) +#' + escapeRegExp( issue.number ), 'i' );
 		return filter( prs, ( pr ) => expression.test( pr.body ) );
 	} );
 }
 
-fetchOpenFiveDotOhPRs().then( ( prs ) => {
+const [ command, script, milestone ] = process.argv;
+if ( ! milestone ) {
+	console.log( 'Usage: npm run print-milestone <milestone>' );
+	process.exit( 0 ); // Exiting with a non-zero status causes npm obscure the actual error
+}
+
+fetchOpenMilestonePRs( milestone ).then( ( prs ) => {
 	if ( prs.length === 1 ) {
-		console.log( `1 PR marked as closing a WordPress 5.0 issue:\n` );
+		console.log( `1 PR marked as closing a "${ milestone }" issue:\n` );
 	} else {
-		console.log( `${ prs.length } PRs marked as closing WordPress 5.0 issues:\n` );
+		console.log( `${ prs.length } PRs marked as closing "${ milestone }" issues:\n` );
 	}
 
 	each( prs, ( pr ) => {
