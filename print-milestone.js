@@ -1,7 +1,6 @@
 const { addQueryArgs } = require( '@wordpress/url' );
 const fetch = require( 'node-fetch' );
-const { flatMap, escapeRegExp, filter, each } = require( 'lodash' );
-const { sprintf } = require( 'sprintf-js' );
+const { flatMap, escapeRegExp, filter, max, map, each, padEnd } = require( 'lodash' );
 
 function escapeQuotes( string ) {
 	return string.replace( '"', '\\"' );
@@ -44,7 +43,8 @@ fetchOpenMilestonePRs( milestone ).then( ( prs ) => {
 		console.log( `${ prs.length } PRs marked as closing "${ milestone }" issues:\n` );
 	}
 
+	const maxTitleWidth = max( map( prs, ( pr ) => pr.title.length ) );
 	each( prs, ( pr ) => {
-		console.log( sprintf( '%-80s %s', pr.title, pr.html_url ) );
+		console.log( padEnd( pr.title, maxTitleWidth ), pr.html_url );
 	} );
 } );

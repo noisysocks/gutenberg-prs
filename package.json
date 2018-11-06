@@ -11,7 +11,6 @@
   "dependencies": {
     "@wordpress/url": "^2.2.0",
     "lodash": "^4.17.11",
-    "node-fetch": "^2.2.1",
-    "sprintf-js": "^1.1.1"
+    "node-fetch": "^2.2.1"
   }
 }
