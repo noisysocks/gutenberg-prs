@@ -1,0 +1,17 @@
+{
+  "name": "gutenberg-prs",
+  "version": "1.0.0",
+  "description": "Utils for searching the Gutenberg GitHub repository for PRs to review",
+  "scripts": {
+    "print-5.0": "node print-5.0.js"
+  },
+  "keywords": [],
+  "author": "Robert Anderson",
+  "license": "MIT",
+  "dependencies": {
+    "@wordpress/url": "^2.2.0",
+    "lodash": "^4.17.11",
+    "node-fetch": "^2.2.1",
+    "sprintf-js": "^1.1.1"
+  }
+}
