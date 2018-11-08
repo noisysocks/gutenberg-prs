@@ -25,7 +25,13 @@ async function fetchOpenPRs() {
 async function fetchOpenMilestonePRs() {
 	const [ issues, prs ] = await Promise.all( [ fetchOpenMilestoneIssues( milestone ), fetchOpenPRs() ] );
 	return flatMap( issues, ( issue ) => {
-		const expression = new RegExp( '(closes|fixes) +#' + escapeRegExp( issue.number ), 'i' );
+		const expression = new RegExp(
+			(
+				'(close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved):? +' +
+				`(#${ escapeRegExp( issue.number ) }|${ escapeRegExp( issue.html_url ) })`
+			),
+			'i'
+		);
 		return filter( prs, ( pr ) => expression.test( pr.body ) );
 	} );
 }
