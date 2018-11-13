@@ -1,25 +1,36 @@
 const { addQueryArgs } = require( '@wordpress/url' );
 const fetch = require( 'node-fetch' );
-const { flatMap, escapeRegExp, filter, max, map, each, padEnd } = require( 'lodash' );
+const parseLinkHeader = require( 'parse-link-header' );
+const { get, flatMap, escapeRegExp, filter, max, map, each, padEnd } = require( 'lodash' );
+
+async function search( query ) {
+	const allItems = [];
+
+	let url = addQueryArgs( 'https://api.github.com/search/issues?q=repo:wordpress/gutenberg', { q: query } );
+
+	do {
+		const response = await fetch( url );
+
+		const link = parseLinkHeader( response.headers.get( 'link' ) );
+		url = get( link, 'next.url', null );
+
+		const { items = [] } = await response.json();
+		allItems.push( ...items );
+	} while ( url );
+
+	return allItems;
+}
 
 function escapeQuotes( string ) {
 	return string.replace( '"', '\\"' );
 }
 
-async function fetchOpenMilestoneIssues( milestone ) {
-	const query = `repo:wordpress/gutenberg is:issue is:open milestone:"${ escapeQuotes( milestone ) }"`;
-	const url = addQueryArgs( 'https://api.github.com/search/issues?q=repo:wordpress/gutenberg', { q: query } );
-	const response = await fetch( url );
-	const { items } = await response.json();
-	return items;
+function fetchOpenMilestoneIssues( milestone ) {
+	return search( `repo:wordpress/gutenberg is:issue is:open milestone:"${ escapeQuotes( milestone ) }"` );
 }
 
-async function fetchOpenPRs() {
-	const query = 'repo:wordpress/gutenberg is:pr is:open';
-	const url = addQueryArgs( 'https://api.github.com/search/issues?q=repo:wordpress/gutenberg', { q: query } );
-	const response = await fetch( url );
-	const { items } = await response.json();
-	return items;
+function fetchOpenPRs() {
+	return search( 'repo:wordpress/gutenberg is:pr is:open' );
 }
 
 async function fetchOpenMilestonePRs() {
@@ -42,11 +53,15 @@ if ( ! milestone ) {
 	process.exit( 0 ); // Exiting with a non-zero status causes npm obscure the actual error
 }
 
+console.log( `Searching for PRs that close issues in the "${ milestone }" milestone…` );
+
 fetchOpenMilestonePRs( milestone ).then( ( prs ) => {
-	if ( prs.length === 1 ) {
-		console.log( `1 PR marked as closing a "${ milestone }" issue:\n` );
+	if ( prs.length === 0 ) {
+		console.log( '\nDone! But no PRs were found.' );
+	} else if ( prs.length === 1 ) {
+		console.log( '\nDone! 1 PR found:\n' );
 	} else {
-		console.log( `${ prs.length } PRs marked as closing "${ milestone }" issues:\n` );
+		console.log( `\nDone! ${ prs.length } PRs found:\n` );
 	}
 
 	const maxTitleWidth = max( map( prs, ( pr ) => pr.title.length ) );
