@@ -12,6 +12,6 @@
     "@wordpress/url": "^2.2.0",
     "lodash": "^4.17.13",
     "node-fetch": "^2.2.1",
-    "parse-link-header": "^1.0.1"
+    "parse-link-header": "^2.0.0"
   }
 }
